@@ -104,6 +104,30 @@ in {
         url = "http://${config.services.prometheus.listenAddress}:${toString config.services.prometheus.port}";
       }
     ];
+
+    provision.alerting = {
+      contactPoints.settings = {
+        apiVersion = 1;
+        contactPoints = [
+          {
+            orgId = 1;
+            name = "Alert team";
+            receivers = [
+              {
+                uid = "";
+                type = "slack";
+                settings = {
+                  url = "";
+                  text = ''{{ template "summary_only" . }}'';
+                  title = "!! ALERTS UPDATE !!";
+                };
+                disableResolveMessage = false;
+              }
+            ];
+          }
+        ];
+      };
+    };
   };
 
   services.prometheus = {
