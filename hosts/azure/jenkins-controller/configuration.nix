@@ -20,27 +20,45 @@
     exec nix --extra-experimental-features nix-command copy --to 'http://localhost:8080?secret-key=/etc/secrets/nix-signing-key&compression=zstd' $OUT_PATHS
   '';
 
-  # TODO: sort out jenkins authentication e.g.:
-  # https://plugins.jenkins.io/github-oauth/
-  # Below config requires admin to trigger builds or manage jenkins
-  # allowing read access for anonymous users:
-  jenkins-groovy = pkgs.writeText "groovy" ''
-    #!groovy
+  jenkins-groovy =
+    pkgs.writeText "groovy"
+    /*
+    groovy
+    */
+    ''
+      #!groovy
 
-    import jenkins.model.*
-    import jenkins.install.*
-    import hudson.security.*
+      import jenkins.install.InstallState
+      import hudson.security.SecurityRealm
+      import hudson.security.GlobalMatrixAuthorizationStrategy
+      import hudson.security.AuthorizationStrategy
+      import org.jenkinsci.plugins.GithubSecurityRealm
+      import org.jenkinsci.plugins.matrixauth.*
+      import com.cloudbees.hudson.plugins.folder.properties.AuthorizationMatrixProperty
 
-    def instance = Jenkins.getInstance()
-    // Disable Setup Wizard
-    instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+      // Disable Setup Wizard
+      Jenkins.instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+      Jenkins.instance.save()
 
-    // Allow anonymous read access
-    def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-    strategy.setAllowAnonymousRead(true)
-    instance.setAuthorizationStrategy(strategy)
-    instance.save()
-  '';
+      // Set up github-oauth security realm
+      String githubWebUri = "https://github.com"
+      String githubApiUri = "https://api.github.com"
+      String clientID = "ae8d386f4a84fed30935"
+      // TODO: secret
+      String clientSecret = ""
+      String oauthScopes = "read:org,user:email"
+      SecurityRealm github_realm = new GithubSecurityRealm(githubWebUri, githubApiUri, clientID, clientSecret, oauthScopes)
+      Jenkins.instance.setSecurityRealm(github_realm)
+
+      // Set up matrix auth strategy
+      AuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy()
+      strategy.add(Jenkins.READ, new PermissionEntry(AuthorizationType.USER, 'anonymous'))
+      strategy.add(Jenkins.ADMINISTER, new PermissionEntry(AuthorizationType.GROUP, 'miso-bot'))
+      Jenkins.instance.setAuthorizationStrategy(strategy)
+
+      // Save settings
+      Jenkins.instance.save()
+    '';
 
   get-secret =
     pkgs.writers.writePython3 "get-secret" {
@@ -177,9 +195,19 @@ in {
     };
     script = let
       jenkins-auth = "-auth admin:\"$(cat /var/lib/jenkins/secrets/initialAdminPassword)\"";
+      plugins = [
+        "workflow-aggregator"
+        "timestamper"
+        "blueocean"
+        "pipeline-stage-view"
+        "pipeline-graph-view"
+        "github"
+        "github-oauth"
+        "matrix-auth"
+      ];
     in ''
       # Install plugins
-      jenkins-cli ${jenkins-auth} install-plugin "workflow-aggregator" "github" "timestamper" "pipeline-stage-view" "blueocean" "pipeline-graph-view" -deploy
+      jenkins-cli ${jenkins-auth} install-plugin ${lib.concatStringsSep " " plugins} -deploy
 
       # Jenkins groovy config
       jenkins-cli ${jenkins-auth} groovy = < ${jenkins-groovy}
