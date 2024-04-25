@@ -24,23 +24,29 @@
   # https://plugins.jenkins.io/github-oauth/
   # Below config requires admin to trigger builds or manage jenkins
   # allowing read access for anonymous users:
-  jenkins-groovy = pkgs.writeText "groovy" ''
-    #!groovy
+  jenkins-groovy =
+    pkgs.writeText "groovy"
+    /*
+    groovy
+    */
+    ''
+      #!groovy
 
-    import jenkins.model.*
-    import jenkins.install.*
-    import hudson.security.*
+      import jenkins.model.*
+      import jenkins.install.*
+      import hudson.security.*
 
-    def instance = Jenkins.getInstance()
-    // Disable Setup Wizard
-    instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
 
-    // Allow anonymous read access
-    def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-    strategy.setAllowAnonymousRead(true)
-    instance.setAuthorizationStrategy(strategy)
-    instance.save()
-  '';
+      def instance = Jenkins.getInstance()
+      // Disable Setup Wizard
+      instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+
+      // Allow anonymous read access
+      def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+      strategy.setAllowAnonymousRead(true)
+      instance.setAuthorizationStrategy(strategy)
+      instance.save()
+    '';
 
   get-secret =
     pkgs.writers.writePython3 "get-secret" {
@@ -179,7 +185,7 @@ in {
       jenkins-auth = "-auth admin:\"$(cat /var/lib/jenkins/secrets/initialAdminPassword)\"";
     in ''
       # Install plugins
-      jenkins-cli ${jenkins-auth} install-plugin "workflow-aggregator" "github" "timestamper" "pipeline-stage-view" "blueocean" "pipeline-graph-view" -deploy
+      jenkins-cli ${jenkins-auth} install-plugin "workflow-aggregator" "github" "timestamper" "pipeline-stage-view" "blueocean" "pipeline-graph-view" "azure-ad" -deploy
 
       # Jenkins groovy config
       jenkins-cli ${jenkins-auth} groovy = < ${jenkins-groovy}
