@@ -4,9 +4,6 @@
 name: Test ghaf-infra
 
 on:
-  push:
-    branches:
-      - main
   pull_request_target:
     branches:
       - main
