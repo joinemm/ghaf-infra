@@ -65,5 +65,5 @@
     };
   };
 
-  nix.settings.trusted-users = ["@wheel" "build3"];
+  nix.settings.trusted-users = ["@wheel" "build3" "dummy"];
 }
