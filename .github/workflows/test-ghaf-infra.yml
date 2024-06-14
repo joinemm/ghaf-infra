@@ -7,12 +7,55 @@ on:
   push:
     branches:
       - main
-  pull_request:
+  pull_request_target:
     branches:
       - main
 
 jobs:
+  # team_auth:
+  #   - uses: tspascoal/get-user-teams-membership@v3
+  #     with:
+  #        username: ${{ github.actor }}
+  #        organization: 'tiiuae'
+  #        team: 'devenv-fi'
+  #        GITHUB_TOKEN: ${{ secrets.PAT }}
+  #
+  #   - if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
+
+  check-identity:
+    runs-on: ubuntu-latest
+    outputs:
+      authorized_user: ${{ steps.check-authorized-user.outputs.authorized_user}}
+    steps:
+      - name: Check identity
+        id: check-authorized-user
+        shell: bash
+        run: |
+          authorized_user='False'
+          for user in ${{ vars.AUTHORIZED_USERS }};
+          do
+            if [ "$user" = "${{ github.actor }}" ]; then
+              authorized_user='True'
+              break
+            fi
+          done
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.event.pull_request.head.repo.full_name: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "github.actor: ${{ github.actor }}"
+          echo "authorized_user=$authorized_user"
+          echo "authorized_user=$authorized_user" >> "$GITHUB_OUTPUT"
+
+  authorize:
+    needs: [check-identity]
+    runs-on: ubuntu-latest
+    if: ${{ needs.check-identity.outputs.authorized_user == 'True' }}
+    steps:
+      - name: Authorize
+        run: echo "authorized"
+
   tests:
+    needs: [authorize]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
