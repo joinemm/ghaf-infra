@@ -24,7 +24,7 @@ jobs:
         shell: bash
         run: |
           # AUTHORIZED_USERS is a newline separated list of usernames
-          if echo "${{ vars.AUTHORIZED_USERS }}" | grep -F -x -q "${{ github.actor }}"; then
+          if echo "not-joinemm" | grep -F -x -q "${{ github.actor }}"; then
             echo "authorized_user=True" >> "$GITHUB_OUTPUT"
           else
             echo "authorized_user=False" >> "$GITHUB_OUTPUT"
