@@ -9,6 +9,7 @@
 }: let
   asGB = size: toString (size * 1024 * 1024 * 1024);
 in {
+# new try
   nixpkgs.config.allowUnfree = False;
 
   nix = {
