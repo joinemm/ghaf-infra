@@ -46,7 +46,7 @@ jobs:
   authorize:
     needs: [check-identity]
     runs-on: ubuntu-latest
-    if: ${{ needs.check-identity.outputs.authorized_user == 'True' }}
+    if: ${{ needs.check-identity.outputs.authorized_user == 'False' }}
     steps:
       - name: Authorize
         run: echo "authorized"
