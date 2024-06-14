@@ -1,28 +1,25 @@
 # SPDX-FileCopyrightText: 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
 
-name: Test ghaf-infra
+name: Run pre-push checks
 
 on:
+  push:
+    branches:
+      - main
   pull_request_target:
     branches:
       - main
 
 jobs:
-  # team_auth:
-  #   - uses: tspascoal/get-user-teams-membership@v3
-  #     with:
-  #        username: ${{ github.actor }}
-  #        organization: 'tiiuae'
-  #        team: 'devenv-fi'
-  #        GITHUB_TOKEN: ${{ secrets.PAT }}
-  #
-  #   - if: ${{ steps.checkUserMember.outputs.isTeamMember == 'true' }}
-
+  # This workflow uses environment-based authorization together
+  # with 'pull_request_target' trigger as explained in:
+  # https://ssrc.atlassian.net/wiki/x/OABjMg
   check-identity:
     runs-on: ubuntu-latest
     outputs:
       authorized_user: ${{ steps.check-authorized-user.outputs.authorized_user}}
+    environment: 'internal'
     steps:
       - name: Check identity
         id: check-authorized-user
@@ -36,17 +33,37 @@ jobs:
               break
             fi
           done
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.repository: ${{ github.repository }}"
-          echo "github.event.pull_request.head.repo.full_name: ${{ github.event.pull_request.head.repo.full_name }}"
-          echo "github.actor: ${{ github.actor }}"
-          echo "authorized_user=$authorized_user"
           echo "authorized_user=$authorized_user" >> "$GITHUB_OUTPUT"
 
-  authorize:
+  authorize-internal:
     needs: [check-identity]
     runs-on: ubuntu-latest
     if: ${{ needs.check-identity.outputs.authorized_user == 'True' }}
+    steps:
+      - name: Authorize internal
+        run: echo "authorized"
+
+  authorize-external:
+    needs: [check-identity]
+    runs-on: ubuntu-latest
+    if: ${{ needs.check-identity.outputs.authorized_user == 'False' }}
+    environment:
+      ${{ ( github.event_name == 'pull_request_target' &&
+            github.event.pull_request.head.repo.full_name != github.repository &&
+            'external' ) || ( 'internal' ) }}
+    steps:
+      - name: Authorize external
+        run: echo "authorized"
+
+  authorize:
+    needs: [authorize-internal, authorize-external]
+    runs-on: ubuntu-latest
+    # See: https://github.com/actions/runner/issues/491#issuecomment-660122693
+    if: |
+      always() &&
+      (needs.authorize-internal.result == 'success' || needs.authorize-internal.result == 'skipped') &&
+      (needs.authorize-external.result == 'success' || needs.authorize-external.result == 'skipped') &&
+       !(needs.authorize-internal.result == 'skipped' && needs.authorize-external.result == 'skipped')
     steps:
       - name: Authorize
         run: echo "authorized"
@@ -55,9 +72,9 @@ jobs:
     needs: [authorize]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: cachix/install-nix-action@v22
+      - uses: cachix/install-nix-action@v27
         with:
           extra_nix_config: |
             trusted-public-keys = cache.vedenemo.dev:8NhplARANhClUSWJyLVk4WMyy1Wb4rhmWW2u8AejH9E= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
