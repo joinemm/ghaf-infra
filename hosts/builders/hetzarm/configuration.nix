@@ -33,7 +33,7 @@
   hardware.enableRedistributableFirmware = true;
 
   networking = {
-    hostName = "hetzarm";
+    hostName = "hetzarma";
     useDHCP = true;
   };
 
