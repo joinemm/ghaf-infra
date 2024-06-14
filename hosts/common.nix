@@ -9,7 +9,7 @@
 }: let
   asGB = size: toString (size * 1024 * 1024 * 1024);
 in {
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.allowUnfree = false;
 
   nix = {
     # This will add each flake input as a registry
