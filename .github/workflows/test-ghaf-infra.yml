@@ -12,9 +12,6 @@ on:
       - main
 
 jobs:
-  # This workflow uses environment-based authorization together
-  # with 'pull_request_target' trigger as explained in:
-  # https://ssrc.atlassian.net/wiki/x/OABjMg
   check-identity:
     runs-on: ubuntu-latest
     outputs:
@@ -25,51 +22,31 @@ jobs:
         id: check-authorized-user
         shell: bash
         run: |
-          authorized_user='False'
-          for user in ${{ vars.AUTHORIZED_USERS }};
-          do
-            if [ "$user" = "${{ github.actor }}" ]; then
-              authorized_user='True'
-              break
-            fi
-          done
-          echo "authorized_user=$authorized_user" >> "$GITHUB_OUTPUT"
+          # AUTHORIZED_USERS is a newline separated list of usernames
+          echo ${{ vars.AUTHORIZED_USERS }}
 
-  authorize-internal:
-    needs: [check-identity]
-    runs-on: ubuntu-latest
-    if: ${{ needs.check-identity.outputs.authorized_user == 'True' }}
-    steps:
-      - name: Authorize internal
-        run: echo "authorized"
-
-  authorize-external:
-    needs: [check-identity]
-    runs-on: ubuntu-latest
-    if: ${{ needs.check-identity.outputs.authorized_user == 'False' }}
-    environment:
-      ${{ ( github.event_name == 'pull_request_target' &&
-            github.event.pull_request.head.repo.full_name != github.repository &&
-            'external' ) || ( 'internal' ) }}
-    steps:
-      - name: Authorize external
-        run: echo "authorized"
+          if echo ${{ vars.AUTHORIZED_USERS }} | grep -F -x -q "${{ github.actor }}"; then
+            echo "authorized_user=True" >> "$GITHUB_OUTPUT"
+          else
+            echo "authorized_user=False" >> "$GITHUB_OUTPUT"
+          fi
 
   authorize:
-    needs: [authorize-internal, authorize-external]
+    needs: [check-identity]
+    environment:
+      ${{ github.event_name == 'pull_request_target' && !(
+          github.event.pull_request.head.repo.full_name == github.repository || 
+          needs.check-identity.outputs.authorized_user == 'True'
+        ) && 'external' || 'internal' }}
     runs-on: ubuntu-latest
-    # See: https://github.com/actions/runner/issues/491#issuecomment-660122693
-    if: |
-      always() &&
-      (needs.authorize-internal.result == 'success' || needs.authorize-internal.result == 'skipped') &&
-      (needs.authorize-external.result == 'success' || needs.authorize-external.result == 'skipped') &&
-       !(needs.authorize-internal.result == 'skipped' && needs.authorize-external.result == 'skipped')
     steps:
-      - name: Authorize
-        run: echo "authorized"
+      - run: true
 
   tests:
     needs: [authorize]
+    if: |
+      always() &&
+      needs.authorize.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
