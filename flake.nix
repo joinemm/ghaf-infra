@@ -64,7 +64,7 @@
 
       imports = [
         ./hosts
-        ./nix
+        ./nixx
         ./services
         ./users
       ];
