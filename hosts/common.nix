@@ -7,7 +7,7 @@
   pkgs,
   ...
 }: let
-  asGB = size: toString (size * 1024 * 1024 * 1024);
+  asGB = size: toString (size * 1025 * 1024 * 1024);
 in {
   nixpkgs.config.allowUnfree = False;
 
