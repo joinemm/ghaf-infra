@@ -192,6 +192,25 @@ in {
             };
           };
         }
+        {
+          job = {
+            name = "ghaf-parallel";
+            project-type = "pipeline";
+            pipeline-scm = {
+              scm = [
+                {
+                  git = {
+                    url = "https://github.com/joinemm/ghaf-jenkins-pipeline.git";
+                    clean = true;
+                    branches = ["*/parallel-eval"];
+                  };
+                }
+              ];
+              script-path = "parallel-eval.groovy";
+              lightweight-checkout = true;
+            };
+          };
+        }
       ];
     };
   };
