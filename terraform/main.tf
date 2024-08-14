@@ -102,23 +102,19 @@ locals {
   # E.g. 'Standard_D2_v3' means: 2 vCPU, 8 GiB RAM
   opts = {
     priv = {
-      vm_size_binarycache     = "Standard_D2_v3"
-      osdisk_size_binarycache = "50"
-      vm_size_builder_x86     = "Standard_D2_v3"
-      vm_size_builder_aarch64 = "Standard_D2ps_v5"
-      osdisk_size_builder     = "150"
-      vm_size_controller      = "Standard_E4_v5"
-      osdisk_size_controller  = "150"
-      num_builders_x86        = 0
-      num_builders_aarch64    = 0
-      # 'priv' and 'dev' environments use the same binary cache signing key
+      vm_size_binarycache     = "Standard_D4_v3"
+      osdisk_size_binarycache = "250"
+      vm_size_builder_x86     = "Standard_D32_v3"
+      vm_size_builder_aarch64 = "Standard_D32ps_v5"
+      osdisk_size_builder     = "500"
+      vm_size_controller      = "Standard_E16_v5"
+      osdisk_size_controller  = "1000"
+      num_builders_x86        = 2
+      num_builders_aarch64    = 2
       binary_cache_public_key = "ghaf-infra-dev:EdgcUJsErufZitluMOYmoJDMQE+HFyveI/D270Cr84I="
       binary_cache_url        = "https://ghaf-binary-cache-${local.ws}.${azurerm_resource_group.infra.location}.cloudapp.azure.com"
-      ext_builder_machines = [
-        "ssh://remote-build@builder.vedenemo.dev x86_64-linux /etc/secrets/remote-build-ssh-key 32 3 kvm,nixos-test,benchmark,big-parallel - -",
-        "ssh://remote-build@hetzarm.vedenemo.dev aarch64-linux /etc/secrets/remote-build-ssh-key 40 3 kvm,nixos-test,benchmark,big-parallel - -"
-      ]
-      ext_builder_keyscan = ["builder.vedenemo.dev", "hetzarm.vedenemo.dev"]
+      ext_builder_machines    = []
+      ext_builder_keyscan     = []
     }
     dev = {
       vm_size_binarycache     = "Standard_D4_v3"
