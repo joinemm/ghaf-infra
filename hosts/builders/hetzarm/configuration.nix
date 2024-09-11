@@ -38,7 +38,11 @@
     useDHCP = true;
   };
 
-  services.monitoring.metrics.enable = true;
+  services.monitoring = {
+    metrics.enable = true;
+    logs.enable = true;
+    logs.lokiAddress = "https://monitoring.vedenemo.dev";
+  };
 
   boot = {
     initrd.availableKernelModules = [
