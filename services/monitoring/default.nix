@@ -18,6 +18,18 @@ in
         default = "http://172.18.20.108";
         description = "The address to send logs to";
       };
+
+      auth = {
+        username = lib.mkOption {
+          type = lib.types.str;
+          default = "logger";
+        };
+
+        password_file = lib.mkOption {
+          type = lib.types.nullOr lib.types.path;
+          default = null;
+        };
+      };
     };
 
   };
@@ -43,7 +55,15 @@ in
         # We have no need for the HTTP or GRPC server
         server.disable = true;
 
-        clients = [ { url = "${cfg.logs.lokiAddress}/loki/api/v1/push"; } ];
+        clients = [
+          {
+            url = "${cfg.logs.lokiAddress}/loki/api/v1/push";
+
+            basic_auth = lib.mkIf (cfg.logs.auth.password_file != null) {
+              inherit (cfg.logs.auth) username password_file;
+            };
+          }
+        ];
 
         scrape_configs = [
           {

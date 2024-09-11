@@ -17,6 +17,7 @@ in
 {
   sops.defaultSopsFile = ./secrets.yaml;
   sops.secrets.sshified_private_key.owner = "sshified";
+  sops.secrets.loki_basic_auth.owner = "nginx";
 
   imports =
     [
@@ -74,7 +75,10 @@ in
 
   services.monitoring = {
     metrics.enable = true;
-    logs.enable = true;
+    logs = {
+      enable = true;
+      lokiAddress = "http://${config.services.loki.configuration.server.http_listen_address}:${toString config.services.loki.configuration.server.http_listen_port}";
+    };
   };
 
   services.grafana = {
@@ -244,6 +248,7 @@ in
       };
       "/loki" = {
         proxyPass = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}/loki";
+        basicAuthFile = config.sops.secrets.loki_basic_auth.path;
         proxyWebsockets = true;
       };
     };
