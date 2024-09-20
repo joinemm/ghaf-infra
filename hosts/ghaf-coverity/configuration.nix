@@ -20,6 +20,7 @@
     ++ (with self.nixosModules; [
       common
       service-openssh
+      service-monitoring
       user-jrautiola
       user-ktu
       user-fayad
@@ -35,6 +36,8 @@
     hostName = "ghaf-coverity";
     useDHCP = true;
   };
+
+  services.monitoring.metrics.enable = true;
 
   boot = {
     # use predictable network interface names (eth0)

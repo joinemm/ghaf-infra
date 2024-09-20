@@ -269,6 +269,12 @@ in
               machine_name = "ghaf-log";
             };
           }
+          {
+            targets = [ "37.27.204.82:9100" ];
+            labels = {
+              machine_name = "ghaf-coverity";
+            };
+          }
         ];
       }
     ];
