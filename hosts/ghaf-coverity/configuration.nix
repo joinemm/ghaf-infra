@@ -37,7 +37,11 @@
     useDHCP = true;
   };
 
-  services.monitoring.metrics.enable = true;
+  services.monitoring = {
+    metrics.enable = true;
+    logs.enable = true;
+    logs.lokiAddress = "https://monitoring.vedenemo.dev";
+  };
 
   boot = {
     # use predictable network interface names (eth0)

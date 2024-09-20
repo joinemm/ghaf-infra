@@ -71,7 +71,11 @@
   # this server has been reinstalled with 24.05
   system.stateVersion = lib.mkForce "24.05";
 
-  services.monitoring.metrics.enable = true;
+  services.monitoring = {
+    metrics.enable = true;
+    logs.enable = true;
+    logs.lokiAddress = "https://monitoring.vedenemo.dev";
+  };
 
   # Grafana
   services.grafana = {
