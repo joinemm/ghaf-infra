@@ -92,13 +92,13 @@ in
       server = {
         http_port = 3000;
         http_addr = "127.0.0.1";
-        # domain = "monitoring.vedenemo.dev";
-        # enforce_domain = true;
+        domain = "monitoring.vedenemo.dev";
+        enforce_domain = true;
 
         # the default root_url is unaware of our nginx reverse proxy,
         # and tries using http with port 3000 as the redirect url for auth.
         # https://github.com/grafana/grafana/issues/11817#issuecomment-387131608
-        # root_url = "https://%(domain)s/";
+        root_url = "https://%(domain)s/";
       };
 
       # disable telemetry
@@ -107,33 +107,33 @@ in
         feedback_links_enabled = false;
       };
 
-      # # https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-security-hardening
-      # security = {
-      #   cookie_secure = true;
-      #   # we cannot use 'strict' here or github oauth cannot set the login cookie
-      #   cookie_samesite = "lax";
-      #   login_cookie_name = "__Host-grafana_session";
-      #   strict_transport_security = true;
-      # };
-      #
-      # "auth.github" = {
-      #   enabled = true;
-      #   client_id = "$__file{${config.sops.secrets.github_client_id.path}}";
-      #   client_secret = "$__file{${config.sops.secrets.github_client_secret.path}}";
-      #
-      #   # only these orgs and teams are allowed login
-      #   # team IDs can be found with github api:
-      #   # $ curl -H "Authorization: $PAT" "https://api.github.com/orgs/tiiuae/teams?per_page=100" | jq '.[] | {name, id}'
-      #   allowed_organizations = [ "tiiuae" ];
-      #   team_ids = lib.strings.concatStringsSep "," [
-      #     "7362549" # devenv-fi
-      #   ];
-      #
-      #   # map github teams to grafana roles
-      #   role_attribute_path = lib.strings.concatStringsSep " || " [
-      #     "contains(groups[*], '@tiiuae/devenv-fi') && 'GrafanaAdmin'"
-      #   ];
-      # };
+      # https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-security-hardening
+      security = {
+        cookie_secure = true;
+        # we cannot use 'strict' here or github oauth cannot set the login cookie
+        cookie_samesite = "lax";
+        login_cookie_name = "__Host-grafana_session";
+        strict_transport_security = true;
+      };
+
+      "auth.github" = {
+        enabled = true;
+        client_id = "$__file{${config.sops.secrets.github_client_id.path}}";
+        client_secret = "$__file{${config.sops.secrets.github_client_secret.path}}";
+
+        # only these orgs and teams are allowed login
+        # team IDs can be found with github api:
+        # $ curl -H "Authorization: $PAT" "https://api.github.com/orgs/tiiuae/teams?per_page=100" | jq '.[] | {name, id}'
+        allowed_organizations = [ "tiiuae" ];
+        team_ids = lib.strings.concatStringsSep "," [
+          "7362549" # devenv-fi
+        ];
+
+        # map github teams to grafana roles
+        role_attribute_path = lib.strings.concatStringsSep " || " [
+          "contains(groups[*], '@tiiuae/devenv-fi') && 'GrafanaAdmin'"
+        ];
+      };
     };
 
     provision.datasources.settings.datasources = [
@@ -291,21 +291,19 @@ in
       };
     in
     {
-      # "monitoring.vedenemo.dev" = {
-      #   default = true;
-      #   enableACME = true;
-      #   forceSSL = true;
-      #   locations = {
-      #     "/" = grafana;
-      #     "/loki" = loki // {
-      #       basicAuthFile = config.sops.secrets.loki_basic_auth.path;
-      #     };
-      #   };
-      # };
+      "monitoring.vedenemo.dev" = {
+        default = true;
+        enableACME = true;
+        forceSSL = true;
+        locations = {
+          "/" = grafana;
+          "/loki" = loki // {
+            basicAuthFile = config.sops.secrets.loki_basic_auth.path;
+          };
+        };
+      };
 
       "_" = {
-        default = true;
-
         locations = {
           "/" = grafana;
           "/loki" = loki;
