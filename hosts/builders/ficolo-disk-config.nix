@@ -45,6 +45,7 @@
                 type = "filesystem";
                 format = "ext4";
                 mountpoint = "/nix";
+                mountOptions = [ "noatime" ];
               };
             };
           };
