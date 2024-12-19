@@ -75,6 +75,8 @@
         treefmt-nix.follows = "treefmt-nix";
       };
     };
+
+    buildbot-nix.url = "github:nix-community/buildbot-nix";
   };
 
   outputs =
