@@ -22,6 +22,15 @@ jenkins:
   - name: "riscv"
 
   nodes:
+    # local node
+  - permanent:
+      launcher: "inbound"
+      mode: EXCLUSIVE
+      name: "evaluator"
+      remoteFS: "/var/lib/jenkins/nodes/evaluator"
+      retentionStrategy: "always"
+
+  # remote nodes
   - permanent:
       launcher: "inbound"
       mode: EXCLUSIVE
