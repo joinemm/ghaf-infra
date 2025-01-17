@@ -27,7 +27,7 @@ jenkins:
       launcher: "inbound"
       mode: EXCLUSIVE
       name: "evaluator"
-      remoteFS: "/var/lib/jenkins/nodes/evaluator"
+      remoteFS: "/var/lib/jenkins/"
       retentionStrategy: "always"
 
   # remote nodes
