@@ -230,6 +230,13 @@ in
 
           instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
           instance.save()
+
+          import org.jenkins.plugins.lockableresources.LockableResourcesManager
+          import org.jenkins.plugins.lockableresources.LockableResource
+          def manager = LockableResourcesManager.get()
+          LockableResource resource = new LockableResource('evaluator')
+          manager.resources.add(resource)
+          manager.save()
         '';
       in
       ''
