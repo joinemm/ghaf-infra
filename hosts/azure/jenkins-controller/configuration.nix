@@ -238,7 +238,7 @@ in
           "workflow-aggregator" "github" "timestamper" "pipeline-stage-view" "blueocean" \
           "pipeline-graph-view" "github-pullrequest" "antisamy-markup-formatter" \
           "configuration-as-code" "slack" "pipeline-utility-steps" "pipeline-build-step" \
-          "robot" "copyartifact"
+          "robot" "copyartifact" "lockable-resources"
 
         # Disable initial install
         jenkins-cli ${jenkins-auth} groovy = < ${jenkins-groovy}

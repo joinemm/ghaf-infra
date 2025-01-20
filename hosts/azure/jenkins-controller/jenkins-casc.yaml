@@ -22,15 +22,6 @@ jenkins:
   - name: "riscv"
 
   nodes:
-    # local node
-  - permanent:
-      launcher: "inbound"
-      mode: EXCLUSIVE
-      name: "evaluator"
-      remoteFS: "/var/lib/jenkins/"
-      retentionStrategy: "always"
-
-  # remote nodes
   - permanent:
       launcher: "inbound"
       mode: EXCLUSIVE
@@ -127,6 +118,10 @@ security:
   gitHostKeyVerificationConfiguration:
     sshHostKeyVerificationStrategy: "knownHostsFileVerificationStrategy"
 unclassified:
+  lockableResourcesManager:
+    declaredResources:
+      - name: "evaluator"
+        description: "Nix evaluation lock"
   bitbucketEndpointConfiguration:
     endpoints:
     - bitbucketCloudEndpoint:
