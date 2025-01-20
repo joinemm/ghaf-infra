@@ -230,13 +230,18 @@ in
 
           instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
           instance.save()
+        '';
 
+        jenkins-post-install = pkgs.writeText "groovy" ''
           import org.jenkins.plugins.lockableresources.LockableResourcesManager
           import org.jenkins.plugins.lockableresources.LockableResource
+
           def manager = LockableResourcesManager.get()
-          LockableResource resource = new LockableResource('evaluator')
-          manager.resources.add(resource)
-          manager.save()
+          if (!manager.resources.find { it.name == resourceName }) {
+            LockableResource resource = new LockableResource('evaluator')
+            manager.resources.add(resource)
+            manager.save()
+          }
         '';
       in
       ''
@@ -252,6 +257,9 @@ in
 
         # Restart jenkins
         jenkins-cli ${jenkins-auth} safe-restart
+
+        # Configure plugins
+        jenkins-cli ${jenkins-auth} groovy = < ${jenkins-post-install}
       '';
   };
 
