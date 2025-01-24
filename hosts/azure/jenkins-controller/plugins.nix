@@ -241,8 +241,8 @@
     commons-compress-api = mkJenkinsPlugin {
       name = "commons-compress-api";
       src = fetchurl {
-        url = "https://updates.jenkins-ci.org/download/plugins/commons-compress-api/1.27.1-1/commons-compress-api.hpi";
-        sha256 = "18e52167feebb182dc9bd90c793afa2ec9f47edae5c7243a535685c16bcf9c81";
+        url = "https://updates.jenkins-ci.org/download/plugins/commons-compress-api/1.26.1-2/commons-compress-api.hpi";
+        sha256 = "2a1579c2a952009f241b5cf5c854093c5dd86971b80fc78d19d07697cc00fd17";
         };
       };
     commons-lang3-api = mkJenkinsPlugin {

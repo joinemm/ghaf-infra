@@ -1,4 +1,4 @@
-commons-compress-api
+commons-compress-api:1.26.1-2
 configuration-as-code
 workflow-aggregator
 github
