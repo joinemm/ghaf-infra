@@ -131,17 +131,21 @@ in
         inputs.ci-yubi.packages.${pkgs.system}.sigver # signing scripts
       ];
 
+    environment = {
+      CASC_JENKINS_CONFIG = toString jenkins-casc;
+    };
+
     extraJavaOptions = [
       # Useful when the 'sh' step fails:
       "-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.LAUNCH_DIAGNOSTICS=true"
       # If we want to allow robot framework reports, we need to adjust Jenkins CSP:
       # https://plugins.jenkins.io/robot/#plugin-content-log-file-not-showing-properly
       "-Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; default-src 'none'; img-src 'self' data: ; style-src 'self' 'unsafe-inline' data: ; script-src 'self' 'unsafe-inline' 'unsafe-eval';\""
-      # Point to configuration-as-code config
-      "-Dcasc.jenkins.config=${jenkins-casc}"
       # Increase the number of rows shown in Stage View (default is 10)
       "-Dcom.cloudbees.workflow.rest.external.JobExt.maxRunsPerJob=32"
     ];
+
+    plugins = import ./plugins.nix { inherit (pkgs) stdenv fetchurl; };
 
     # Configure jenkins job(s):
     # https://jenkins-job-builder.readthedocs.io/en/latest/project_pipeline.html
@@ -231,35 +235,13 @@ in
           instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
           instance.save()
         '';
-
-        jenkins-post-install = pkgs.writeText "groovy" ''
-          import org.jenkins.plugins.lockableresources.LockableResourcesManager
-          import org.jenkins.plugins.lockableresources.LockableResource
-
-          def manager = LockableResourcesManager.get()
-          if (!manager.resources.find { it.name == resourceName }) {
-            LockableResource resource = new LockableResource('evaluator')
-            manager.resources.add(resource)
-            manager.save()
-          }
-        '';
       in
       ''
-        # Install plugins
-        jenkins-cli ${jenkins-auth} install-plugin \
-          "workflow-aggregator" "github" "timestamper" "pipeline-stage-view" "blueocean" \
-          "pipeline-graph-view" "github-pullrequest" "antisamy-markup-formatter" \
-          "configuration-as-code" "slack" "pipeline-utility-steps" "pipeline-build-step" \
-          "robot" "copyartifact" "lockable-resources"
-
         # Disable initial install
         jenkins-cli ${jenkins-auth} groovy = < ${jenkins-groovy}
 
         # Restart jenkins
         jenkins-cli ${jenkins-auth} safe-restart
-
-        # Configure plugins
-        jenkins-cli ${jenkins-auth} groovy = < ${jenkins-post-install}
       '';
   };
 

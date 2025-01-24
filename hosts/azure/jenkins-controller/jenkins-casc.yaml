@@ -118,6 +118,10 @@ security:
   gitHostKeyVerificationConfiguration:
     sshHostKeyVerificationStrategy: "knownHostsFileVerificationStrategy"
 unclassified:
+  lockableResourcesManager:
+    declaredResources:
+      - name: "evaluator"
+        description: "Nix evaluation lock"
   bitbucketEndpointConfiguration:
     endpoints:
     - bitbucketCloudEndpoint:
