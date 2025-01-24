@@ -4,6 +4,7 @@ workflow-aggregator
 github
 slack
 timestamper
+blueocean
 pipeline-stage-view
 pipeline-graph-view
 github-pullrequest
