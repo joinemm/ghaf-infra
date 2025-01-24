@@ -1,3 +1,4 @@
+commons-compress-api:1.26.1-2
 workflow-aggregator
 github
 timestamper
