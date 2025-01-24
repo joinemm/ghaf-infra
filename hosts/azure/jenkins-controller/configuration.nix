@@ -143,6 +143,8 @@ in
       "-Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; default-src 'none'; img-src 'self' data: ; style-src 'self' 'unsafe-inline' data: ; script-src 'self' 'unsafe-inline' 'unsafe-eval';\""
       # Increase the number of rows shown in Stage View (default is 10)
       "-Dcom.cloudbees.workflow.rest.external.JobExt.maxRunsPerJob=32"
+      # To allow referencing local libraries in the /nix store. ie., our /groovy-library.
+      "-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true"
     ];
 
     plugins = import ./plugins.nix { inherit (pkgs) stdenv fetchurl; };
