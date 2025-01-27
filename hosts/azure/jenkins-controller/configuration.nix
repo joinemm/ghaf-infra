@@ -168,9 +168,9 @@ in
                 scm = [
                   {
                     git = {
-                      url = "https://github.com/tiiuae/ghaf-jenkins-pipeline.git";
+                      url = "https://github.com/joinemm/ghaf-jenkins-pipeline.git";
                       clean = true;
-                      branches = [ "*/main" ];
+                      branches = [ "*/pr-parallel-pipelines" ];
                     };
                   }
                 ];
