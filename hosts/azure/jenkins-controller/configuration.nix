@@ -203,49 +203,23 @@ in
   # https://github.com/NixOS/nixpkgs/pull/272679
   systemd.services.jenkins.serviceConfig.StateDirectory = "jenkins";
 
-  # Install jenkins plugins, apply initial jenkins config
-  systemd.services.jenkins-config = {
-    after = [ "jenkins-job-builder.service" ];
-    wantedBy = [ "multi-user.target" ];
-    # Make `jenkins-cli` available
-    path = with pkgs; [ jenkins ];
-    # Implicit URL parameter for `jenkins-cli`
-    environment = {
-      JENKINS_URL = "http://localhost:8081";
-    };
-    serviceConfig = {
-      Restart = "on-failure";
-      RestartSec = 5;
-      RequiresMountsFor = "/var/lib/jenkins";
-    };
-    script =
-      let
-        jenkins-auth = "-auth admin:\"$(cat /var/lib/jenkins/secrets/initialAdminPassword)\"";
+  systemd.tmpfiles.rules =
+    let
+      jenkins-groovy =
+        pkgs.writeText "init.groovy" # groovy
+          ''
+            import jenkins.model.*
+            import hudson.util.*;
+            import jenkins.install.*;
 
-        # disable initial setup, which needs to happen *after* all jenkins-cli setup.
-        # otherwise we won't have initialAdminPassword.
-        # Disabling the setup wizard cannot happen from configuration-as-code either.
-        jenkins-groovy = pkgs.writeText "groovy" ''
-          #!groovy
-
-          import jenkins.model.*
-          import hudson.util.*;
-          import jenkins.install.*;
-
-          def instance = Jenkins.getInstance()
-
-          instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
-          instance.save()
-        '';
-      in
-      ''
-        # Disable initial install
-        jenkins-cli ${jenkins-auth} groovy = < ${jenkins-groovy}
-
-        # Restart jenkins
-        jenkins-cli ${jenkins-auth} safe-restart
-      '';
-  };
+            def instance = Jenkins.getInstance()
+            instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+            instance.save()
+          '';
+    in
+    [
+      "L /var/lib/jenkins/init.groovy - jenkins jenkins - ${jenkins-groovy}"
+    ];
 
   # Define a fetch-remote-build-ssh-key unit populating
   # /etc/secrets/remote-build-ssh-key from Azure Key Vault.
