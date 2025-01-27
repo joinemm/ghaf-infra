@@ -203,23 +203,33 @@ in
   # https://github.com/NixOS/nixpkgs/pull/272679
   systemd.services.jenkins.serviceConfig.StateDirectory = "jenkins";
 
-  systemd.tmpfiles.rules =
-    let
-      jenkins-groovy =
-        pkgs.writeText "init.groovy" # groovy
-          ''
-            import jenkins.model.*
-            import hudson.util.*;
-            import jenkins.install.*;
+  # apply initial jenkins config
+  systemd.services.jenkins-config = {
+    before = [ "jenkins.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = 5;
+      RequiresMountsFor = "/var/lib/jenkins";
+    };
+    script =
+      let
+        jenkins-groovy =
+          pkgs.writeText "groovy" # groovy
+            ''
+              import jenkins.model.*
+              import hudson.util.*;
+              import jenkins.install.*;
 
-            def instance = Jenkins.getInstance()
-            instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
-            instance.save()
-          '';
-    in
-    [
-      "L /var/lib/jenkins/init.groovy - jenkins jenkins - ${jenkins-groovy}"
-    ];
+              def instance = Jenkins.getInstance()
+              instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+              instance.save()
+            '';
+      in
+      ''
+        ln -s ${jenkins-groovy} /var/lib/jenkins/init.groovy
+      '';
+  };
 
   # Define a fetch-remote-build-ssh-key unit populating
   # /etc/secrets/remote-build-ssh-key from Azure Key Vault.
