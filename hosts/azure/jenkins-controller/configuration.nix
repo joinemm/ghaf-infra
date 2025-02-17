@@ -107,6 +107,26 @@ in
     ];
   };
 
+  programs.java.enable = true;
+  environment.systemPackages =
+    with pkgs;
+    [
+      bashInteractive # 'sh' step in jenkins pipeline requires this
+      coreutils
+      nix
+      git
+      zstd
+      jq
+      csvkit
+      curl
+      nix-eval-jobs
+    ]
+    ++ [
+      rclone # used to copy artifacts
+      inputs.sbomnix.packages.${pkgs.system}.sbomnix # sbomnix, provenance, vulnxscan
+      inputs.ci-yubi.packages.${pkgs.system}.sigver # signing scripts
+    ];
+
   services.jenkins = {
     enable = true;
     listenAddress = "localhost";
