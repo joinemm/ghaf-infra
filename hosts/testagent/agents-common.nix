@@ -5,6 +5,7 @@
   pkgs,
   inputs,
   lib,
+  config,
   ...
 }:
 let
@@ -99,8 +100,8 @@ in
           # opens a websocket connection to the jenkins controller from this agent
           jenkins-connect-script = pkgs.writeShellScript "jenkins-connect.sh" ''
             JENKINS_SECRET="$(
-              curl --proto =https -u admin:$ADMIN_PASSWORD \
-              $CONTROLLER/computer/${device}/jenkins-agent.jnlp |
+              ssh ${config.networking.hostname}@$CONTROLLER \
+              "curl -H 'X-Forwarded-User: ${config.networking.hostname}' localhost:8081/computer/${device}/jenkins-agent.jnlp" |
               sed "s/.*<application-desc><argument>\([a-z0-9]*\).*/\1\n/"
             )"
 
