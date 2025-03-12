@@ -73,8 +73,7 @@ in
         if [[ ! -f jenkins.env ]]; then
           install -m 600 /dev/null jenkins.env
           echo "CONTROLLER=" > jenkins.env
-          echo "ADMIN_PASSWORD=" >> jenkins.env
-          echo "Please add jenkins controller details to $(pwd)/jenkins.env"
+          echo "Please add jenkins controller url to $(pwd)/jenkins.env"
           exit 1
         fi
 
@@ -85,11 +84,6 @@ in
           exit 1
         fi
 
-        if [[ -z "$ADMIN_PASSWORD" ]]; then
-          echo "Variable ADMIN_PASSWORD not set in $(pwd)/jenkins.env"
-          exit 1
-        fi
-
         curl -O "$CONTROLLER/jnlpJars/agent.jar"
       '';
 
@@ -97,24 +91,29 @@ in
       mkAgent =
         device:
         let
-          # opens a websocket connection to the jenkins controller from this agent
-          jenkins-connect-script = pkgs.writeShellScript "jenkins-connect.sh" ''
-            JENKINS_SECRET="$(
-              ssh ${config.networking.hostname}@$CONTROLLER \
-              "curl -H 'X-Forwarded-User: ${config.networking.hostname}' localhost:8081/computer/${device}/jenkins-agent.jnlp" |
-              sed "s/.*<application-desc><argument>\([a-z0-9]*\).*/\1\n/"
-            )"
+          jenkins-connect-script =
+            pkgs.writeShellScript "jenkins-connect.sh" # sh
+              ''
+                # connects to controller with ssh, host key checking is disabled as it changes frequently
+                # grabs the secret from jenkins jnlp file and saves it to a variable
+                JENKINS_SECRET="$(
+                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                  ${config.networking.hostName}@''${CONTROLLER#*//} \
+                  "curl -H 'X-Forwarded-User: ${config.networking.hostName}' localhost:8081/computer/${device}/jenkins-agent.jnlp" |
+                  sed "s/.*<application-desc><argument>\([a-z0-9]*\).*/\1\n/"
+                )"
 
-            mkdir -p "/var/lib/jenkins/agents/${device}"
+                mkdir -p "/var/lib/jenkins/agents/${device}"
 
-            ${pkgs.jdk}/bin/java \
-              -jar agent.jar \
-              -url "$CONTROLLER" \
-              -name "${device}" \
-              -secret "$JENKINS_SECRET" \
-              -workDir "/var/lib/jenkins/agents/${device}" \
-              -webSocket
-          '';
+                # opens a websocket connection to the jenkins controller from this agent
+                ${pkgs.jdk}/bin/java \
+                  -jar agent.jar \
+                  -url "$CONTROLLER" \
+                  -name "${device}" \
+                  -secret "$JENKINS_SECRET" \
+                  -workDir "/var/lib/jenkins/agents/${device}" \
+                  -webSocket
+              '';
         in
         {
           # agents require the setup service to run without errors before starting
