@@ -125,7 +125,7 @@ in
   users.users = {
     testagent-release = {
       isNormalUser = true;
-      openssh.authorizedKeys = [
+      openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPP2xRl4jtu1ARpyj9W3uEo+GACLywosKhal432CgK+H mytarget"
       ];
     };
