@@ -29,6 +29,8 @@
       user-hrosten
     ]);
 
+  sops.defaultSopsFile = ./secrets.yaml;
+
   networking = {
     hostName = "testagent-prod";
     useNetworkd = true;

@@ -72,5 +72,7 @@ allPipelines = true
 [[unclassified.lockableResourcesManager.declaredResources]]
 name = "evaluator"
 description = "Nix evaluator lock"
+
+[[unclassified.lockableResourcesManager.declaredResources]]
 name = "sbom"
 description = "SBOM generation lock"

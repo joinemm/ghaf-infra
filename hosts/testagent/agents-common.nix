@@ -31,6 +31,8 @@ in
       wifi-password = credential;
       pi-login = credential;
       pi-pass = credential;
+      # used for ssh connections
+      ssh_host_ed25519_key.owner = "jenkins";
     };
 
   services.udev.packages = [
@@ -84,7 +86,7 @@ in
           exit 1
         fi
 
-        curl -O "$CONTROLLER/jnlpJars/agent.jar"
+        wget -O agent.jar "$CONTROLLER/jnlpJars/agent.jar"
       '';
 
       # Helper function to create agent services for each hardware device
@@ -97,7 +99,7 @@ in
                 # connects to controller with ssh, host key checking is disabled as it changes frequently
                 # grabs the secret from jenkins jnlp file and saves it to a variable
                 JENKINS_SECRET="$(
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${config.sops.secrets.ssh_host_ed25519_key.path}\
                   ${config.networking.hostName}@''${CONTROLLER#*//} \
                   "curl -H 'X-Forwarded-User: ${config.networking.hostName}' localhost:8081/computer/${device}/jenkins-agent.jnlp" |
                   sed "s/.*<application-desc><argument>\([a-z0-9]*\).*/\1\n/"
@@ -160,7 +162,7 @@ in
       # the setup service does not start automatically or it would fail activation
       # of the system since jenkins.env is empty before manually set up
       setup-agents = {
-        path = with pkgs; [ curl ];
+        path = with pkgs; [ wget ];
         serviceConfig = {
           Type = "oneshot";
           User = "jenkins";
