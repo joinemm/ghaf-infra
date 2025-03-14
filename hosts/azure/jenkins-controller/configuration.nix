@@ -413,6 +413,9 @@ in
         handle /jnlpJars/* {
           reverse_proxy localhost:8081
         }
+        handle /wsagents/ {
+          reverse_proxy localhost:8081
+        }
         handle {
           forward_auth localhost:4180 {
             uri /oauth2/auth
