@@ -17,15 +17,23 @@ let
     name = "connect";
     text = # sh
       ''
-        if [[ ! $1 =~ ^https?://[^/]+$ ]]; then
-          echo "ERROR: The URL should start with https and not have any subpath or trailing slash"
+        url="''${1%/}"  # Remove trailing slash
+
+        if [[ ! $url =~ ^https?://[^/]+$ ]]; then
+          echo "ERROR: The URL should start with https and not have any subpath"
           exit 1
         fi
 
         if [[ ! -f /var/lib/jenkins/jenkins.env ]]; then
+          # create the file with correct permissions
           sudo install -o jenkins -g jenkins -m 600 /dev/null /var/lib/jenkins/jenkins.env
         fi
-        echo "CONTROLLER=$1" | sudo tee /var/lib/jenkins/jenkins.env
+
+        # add this controller to known hosts
+        sudo -u jenkins bash -c "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
+        sudo -u jenkins bash -c "ssh-keyscan ''${url#*//} >> ~/.ssh/known_hosts"
+
+        echo "CONTROLLER=$url" | sudo tee /var/lib/jenkins/jenkins.env
         sudo systemctl restart start-agents.service
 
         echo "Connected agents to the controller"
@@ -150,10 +158,9 @@ in
 
                 mkdir -p "/var/lib/jenkins/agents/${device}"
 
-                # connects to controller with ssh, host key checking is disabled as it changes frequently
-                # grabs the secret from jenkins jnlp file and saves it to a variable
+                # connects to controller with ssh and grabs the jnlp file which includes the secret
                 JNLP="$(
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${config.sops.secrets.ssh_host_ed25519_key.path} \
+                  ssh -i ${config.sops.secrets.ssh_host_ed25519_key.path} \
                   ${config.networking.hostName}@''${CONTROLLER#*//} \
                   "curl -H 'X-Forwarded-User: ${config.networking.hostName}' http://localhost:8081/computer/${device}/jenkins-agent.jnlp"
                 )"
