@@ -447,12 +447,13 @@ in
 
   services.oauth2-proxy = {
     enable = true;
-    provider = "github";
+    provider = "oidc";
     clientID = null;
     clientSecret = null;
     cookie.secret = null;
-    github.org = "tiiuae";
     setXauthrequest = true;
+    oidcIssuerUrl = "https://auth.vedenemo.dev";
+    cookie.secure = false;
     extraConfig = {
       email-domain = "*"; # We require membership in the tiiuae org
       auth-logging = true;
