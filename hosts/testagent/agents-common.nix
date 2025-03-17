@@ -30,8 +30,8 @@ let
         fi
 
         # add this controller to known hosts
-        sudo -u jenkins bash -c "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
-        sudo -u jenkins bash -c "ssh-keyscan ''${url#*//} >> ~/.ssh/known_hosts"
+        sudo -u jenkins ssh-keygen -R "''${url#*//}" 2>/dev/null || true
+        sudo -u jenkins ssh -o StrictHostKeyChecking=no -i ${config.sops.secrets.ssh_host_ed25519_key.path} "${config.networking.hostName}@''${url#*//}" exit
 
         echo "CONTROLLER=$url" | sudo tee /var/lib/jenkins/jenkins.env
         sudo systemctl restart start-agents.service
@@ -109,8 +109,8 @@ in
 
   systemd.services =
     let
-      # Helper function to create agent services for each hardware device
       mkAgent = device: {
+        # bindsTo instead of requires makes the agents stop when the parent service stops
         bindsTo = [ "start-agents.service" ];
         wantedBy = [ "start-agents.service" ];
         after = [ "start-agents.service" ];
@@ -158,13 +158,11 @@ in
 
                 mkdir -p "/var/lib/jenkins/agents/${device}"
 
-                # connects to controller with ssh and grabs the jnlp file which includes the secret
-                JNLP="$(
-                  ssh -i ${config.sops.secrets.ssh_host_ed25519_key.path} \
-                  ${config.networking.hostName}@''${CONTROLLER#*//} \
-                  "curl -H 'X-Forwarded-User: ${config.networking.hostName}' http://localhost:8081/computer/${device}/jenkins-agent.jnlp"
+                # connects to controller with ssh and parses the secret from the jnlp file
+                JENKINS_SECRET="$(
+                  ssh -i ${config.sops.secrets.ssh_host_ed25519_key.path} ${config.networking.hostName}@''${CONTROLLER#*//} \
+                  "curl -H 'X-Forwarded-User: ${config.networking.hostName}' http://localhost:8081/computer/${device}/jenkins-agent.jnlp | sed 's/.*<application-desc><argument>\([a-z0-9]*\).*/\1\n/'"
                 )"
-                JENKINS_SECRET="$(echo $JNLP | sed "s/.*<application-desc><argument>\([a-z0-9]*\).*/\1\n/")"
 
                 # opens a websocket connection to the jenkins controller from this agent
                 ${pkgs.jdk}/bin/java \
