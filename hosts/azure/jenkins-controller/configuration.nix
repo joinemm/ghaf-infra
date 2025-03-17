@@ -429,8 +429,7 @@ in
               X-Auth-Request-Groups>X-Forwarded-Groups
               X-Auth-Request-Email>X-Forwarded-Mail
               # it looks like the plugin ignores the forwardedDisplayName config?
-              X-Auth-Request-Preferred-Username
-              #>X-Forwarded-DisplayName
+              X-Auth-Request-Preferred-Username>X-Forwarded-DisplayName
             }
 
             # If oauth2-proxy returns a 401 status, redirect the client to the sign-in page.

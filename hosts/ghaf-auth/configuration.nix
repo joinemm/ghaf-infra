@@ -65,7 +65,7 @@
         http = "127.0.0.1:5556";
       };
 
-      # enablePasswordDB = false;
+      enablePasswordDB = false;
 
       connectors = [
         {
@@ -77,7 +77,6 @@
             clientID = "$GITHUB_CLIENT_ID";
             clientSecret = "$GITHUB_CLIENT_SECRET";
             redirectURI = "https://auth.vedenemo.dev/callback";
-            preferredEmailDomain = "unikie.com";
             orgs = [
               { name = "joinemm-test-realm"; }
             ];
