@@ -428,7 +428,6 @@ in
               X-Auth-Request-User>X-Forwarded-User
               X-Auth-Request-Groups>X-Forwarded-Groups
               X-Auth-Request-Email>X-Forwarded-Mail
-              # it looks like the plugin ignores the forwardedDisplayName config?
               X-Auth-Request-Preferred-Username>X-Forwarded-DisplayName
             }
 
@@ -454,7 +453,6 @@ in
     oidcIssuerUrl = "https://auth.vedenemo.dev";
     cookie.secure = false;
     extraConfig = {
-      email-domain = "*"; # We require membership in the tiiuae org
       auth-logging = true;
       request-logging = true;
       standard-logging = true;

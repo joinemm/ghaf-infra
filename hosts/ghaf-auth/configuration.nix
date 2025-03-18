@@ -65,6 +65,11 @@
         http = "127.0.0.1:5556";
       };
 
+      oauth2 = {
+        skipApprovalScreen = false;
+        alwaysShowLoginScreen = true;
+      };
+
       enablePasswordDB = false;
 
       connectors = [
