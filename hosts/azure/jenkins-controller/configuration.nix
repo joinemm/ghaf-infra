@@ -410,12 +410,17 @@ in
             header_up X-Forwarded-Uri {uri}
           }
         }
+        
+        # allow downloading agent.jar without authentication
         handle /jnlpJars/* {
           reverse_proxy localhost:8081
         }
+
+        # allow agents to connect to the websocket without getting redirected to oauth
         handle /wsagents/ {
           reverse_proxy localhost:8081
         }
+
         handle {
           forward_auth localhost:4180 {
             uri /oauth2/auth
@@ -445,14 +450,19 @@ in
 
   services.oauth2-proxy = {
     enable = true;
-    provider = "oidc";
+
+    # We inject cookie secret, client id and client secret through terraform in cloud-init
     clientID = null;
     clientSecret = null;
     cookie.secret = null;
-    setXauthrequest = true;
+
+    provider = "oidc";
     oidcIssuerUrl = "https://auth.vedenemo.dev";
+    setXauthrequest = true;
     cookie.secure = false;
+
     extraConfig = {
+      email-domain = "*"; # We require membership in the tiiuae org
       auth-logging = true;
       request-logging = true;
       standard-logging = true;
@@ -460,18 +470,23 @@ in
     };
   };
 
-  # We inject cookie secret, client id and client secret through env vars
-  systemd.services.oauth2-proxy.serviceConfig.EnvironmentFile = "/var/lib/oauth2-proxy.env";
+  # Wait for cloud-init mounting before we start oauth2-proxy.
+  systemd.services.oauth2-proxy = {
+    after = [ "cloud-init.service" ];
+    requires = [ "cloud-init.service" ];
+    serviceConfig.EnvironmentFile = "/var/lib/oauth2-proxy.env";
+  };
 
-  systemd.services.caddy.serviceConfig.EnvironmentFile = "/var/lib/caddy/caddy.env";
+  # Wait for cloud-init mounting before we start caddy.
+  systemd.services.caddy = {
+    after = [ "cloud-init.service" ];
+    requires = [ "cloud-init.service" ];
+    serviceConfig.EnvironmentFile = "/var/lib/caddy/caddy.env";
+  };
 
   # Configure Nix to use the bucket (through rclone-http) as a substitutor.
   # The public key is passed in externally.
   nix.settings.substituters = [ "http://localhost:8080" ];
-
-  # Wait for cloud-init mounting before we start caddy.
-  systemd.services.caddy.after = [ "cloud-init.service" ];
-  systemd.services.caddy.requires = [ "cloud-init.service" ];
 
   # Expose the HTTP[S] port. We still need HTTP for the HTTP-01 challenge.
   # While TLS-ALPN-01 could be used, disabling HTTP-01 seems only possible from
@@ -482,6 +497,5 @@ in
   ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-
-  system.stateVersion = "23.05";
+  system.stateVersion = "24.11";
 }

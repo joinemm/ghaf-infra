@@ -53,7 +53,6 @@
 
     environmentFile = config.sops.secrets.dex_env.path;
     settings = {
-      # External url
       issuer = "https://auth.vedenemo.dev";
 
       storage = {
@@ -66,8 +65,8 @@
       };
 
       oauth2 = {
-        skipApprovalScreen = false;
-        alwaysShowLoginScreen = true;
+        skipApprovalScreen = true;
+        alwaysShowLoginScreen = false;
       };
 
       enablePasswordDB = false;
@@ -89,16 +88,29 @@
         }
       ];
 
-      staticClients = [
-        {
-          id = "Ov23liAynO6J0x3xMuyb";
-          name = "flokli environment";
-          redirectURIs = [
-            "https://ghaf-jenkins-controller-flokli.northeurope.cloudapp.azure.com/oauth2/callback"
+      staticClients =
+        map
+          (ws: {
+            id = "ghaf-jenkins-controller-${ws}";
+            name = "ghaf-jenkins-controller-${ws}";
+            redirectURIs = [
+              "https://ghaf-jenkins-controller-${ws}.northeurope.cloudapp.azure.com/oauth2/callback"
+            ];
+            secretEnv = "JENKINS_CONTROLLER_AUTH_SECRET";
+          })
+          [
+            "dev"
+            "prod"
+            "release"
+
+            "alextserepov"
+            "cazfi"
+            "flokli"
+            "henri"
+            "jrautiola"
+            "kaitusa"
+            "vjuntunen"
           ];
-          secretEnv = "CLIENT_SECRET_FLOKLI";
-        }
-      ];
     };
   };
 
