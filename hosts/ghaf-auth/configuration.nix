@@ -82,7 +82,7 @@
             clientSecret = "$GITHUB_CLIENT_SECRET";
             redirectURI = "https://auth.vedenemo.dev/callback";
             orgs = [
-              { name = "joinemm-test-realm"; }
+              { name = "tiiuae"; }
             ];
           };
         }

@@ -467,6 +467,8 @@ in
       request-logging = true;
       standard-logging = true;
       reverse-proxy = true; # Needed according to https://oauth2-proxy.github.io/oauth2-proxy/configuration/integration#configuring-for-use-with-the-caddy-v2-forward_auth-directive
+      provider-display-name = "Vedenemo Auth";
+      custom-sign-in-logo = "-";
     };
   };
 
