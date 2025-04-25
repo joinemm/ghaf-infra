@@ -520,6 +520,9 @@ in
           # testagents need these
           path /jnlpJars /jnlpJars/*
           path /wsagents /wsagents/*
+
+          # images
+          path /job/*/*/artifact/Robot-Framework/test-suites/*/*.png
         }
 
         handle @unauthenticated {
