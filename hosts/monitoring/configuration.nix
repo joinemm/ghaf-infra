@@ -323,11 +323,6 @@ in
     ];
   };
 
-  security.acme = {
-    acceptTerms = true;
-    defaults.email = "trash@unikie.com";
-  };
-
   services.nginx.virtualHosts =
     let
       grafana = {
