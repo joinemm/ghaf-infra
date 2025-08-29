@@ -95,7 +95,25 @@
           ++ (with inputs'; [
             nix-fast-build.packages.default
             deploy-rs.packages.default
-          ]);
+          ])
+          ++ [
+            (pkgs.writeShellScriptBin "deploy-diff" ''
+              set -eou pipefail
+
+              host="$1"
+              shift 1
+              trap 'rm wait.fifo' EXIT
+              mkfifo wait.fifo
+
+              deploy "$@" --debug-logs --dry-activate ".#$host" 2>&1 \
+                | tee >(grep -v DEBUG) >(grep 'activate-rs --debug-logs activate' | \
+                    sed -e 's/^.*activate-rs --debug-logs activate \(.*\) --profile-user.*$/\1/' | \
+                    xargs -I% bash -xc "ssh $host 'nix diff /run/current-system %'" ; echo >wait.fifo) \
+                >/dev/null
+
+              read <wait.fifo
+            '')
+          ];
       };
     };
 }
