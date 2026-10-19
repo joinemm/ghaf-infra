@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # Day 2: Instructor notes
 
-Companion to the [participant page](training-day-2.md) for Joonas's session on
+Companion to the [participant page](https://github.com/tiiuae/ghaf-infra/blob/main/docs/training-day-2.md) for Joonas's session on
 October 20, 2026. All times below are Finnish time.
 
 ## Main thread
@@ -56,7 +56,7 @@ Save the console log and these small files locally:
 - `test-results.json`, per-test `result.json` files, and the relevant downstream
   logs and copied test artifacts.
 
-The [ghaf-fetch helper](../scripts/ghaf-fetch.sh) can select metadata and referrers
+The [ghaf-fetch helper](https://github.com/tiiuae/ghaf-infra/blob/main/scripts/ghaf-fetch.sh) can select metadata and referrers
 without selecting the large image. Work in an empty directory when downloading.
 Keep the exact OCI digest for the exercise; an environment's `latest` tag can
 move to a different run.
@@ -64,11 +64,11 @@ move to a different run.
 Open these browser tabs ahead of time:
 
 1. The main run's overview, console log, artifacts, and downstream job links.
-2. The [main job](../modules/jenkins/pipelines/ghaf-main.groovy).
-3. The [shared execution](../modules/jenkins/pipeline-library/vars/pipelineExecution.groovy).
-4. The [provenance trust policy](../slsa/provenance-trust-policy.yaml).
+2. The [main job](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipelines/ghaf-main.groovy).
+3. The [shared execution](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipeline-library/vars/pipelineExecution.groovy).
+4. The [provenance trust policy](https://github.com/tiiuae/ghaf-infra/blob/main/slsa/provenance-trust-policy.yaml).
 5. Both downstream hardware-test runs and their parameters and results.
-6. The [pre-merge job](../modules/jenkins/pipelines/ghaf-pre-merge.groovy) for a
+6. The [pre-merge job](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipelines/ghaf-pre-merge.groovy) for a
    brief comparison of checkout, test sets, and PR status reporting.
 
 Rehearse the metadata commands below using the saved files. If live verification
@@ -104,9 +104,9 @@ Build the explanation around these roles:
 Prod/dev use `hetz86-1` and `hetzarm`. The selected x86_64 target uses the
 configured x86_64 remote store. Use the actual run's
 `manifest.build.remote_store` to establish which store handled this target.
-Sources: [prod configuration](../hosts/hetzci/prod/configuration.nix),
-[shared builders](../hosts/hetzci/remote-builders.nix), and
-[architecture](architecture.md#cicd-pipeline-flow).
+Sources: [prod configuration](https://github.com/tiiuae/ghaf-infra/blob/main/hosts/hetzci/prod/configuration.nix),
+[shared builders](https://github.com/tiiuae/ghaf-infra/blob/main/hosts/hetzci/remote-builders.nix), and
+[architecture](https://github.com/tiiuae/ghaf-infra/blob/main/docs/architecture.md#cicd-pipeline-flow).
 
 Explain that `runDetails.builder.id` is set to the Jenkins URL. It does not name
 the physical remote builder. Ask participants where they would find each identity.
@@ -161,7 +161,7 @@ Trace this sequence in the selected target's log and directory:
    test-result referrers when that stage completes as expected.
 
 Show the exact handoff in
-[`hwTestUtils.run_hw_test`](../modules/jenkins/pipeline-library/vars/hwTestUtils.groovy):
+[`hwTestUtils.run_hw_test`](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipeline-library/vars/hwTestUtils.groovy):
 `OCI_IMAGE_REF`, `TEST_TARGET`, `DEVICE_TAG`, and `TESTSET`. One generic image is
 tested through two device-specific variants. Compare the downstream parameters
 against the parent manifest and OCI result.
@@ -232,7 +232,7 @@ statement; `verify` checks it. Finish with the optional-stage behavior in
 `ghaf-main`, then move on. Keep the implementation and command details for
 questions or later reference.
 
-For reference, in the [implementation](../pkgs/source-vsa/src/source_vsa.py), the verification
+For reference, in the [implementation](https://github.com/tiiuae/ghaf-infra/blob/main/pkgs/source-vsa/src/source_vsa.py), the verification
 path checks the expected repository and commit, allows `refs/heads/main`, checks
 the signed statement's claims, and verifies the Sigstore certificate identity
 for the expected GitHub workflow, repository, ref, SHA, issuer, and push trigger.
@@ -251,7 +251,7 @@ ghaf-infra revision, Jenkins URL, invocation link, and timestamps. Then expand t
 subject and resolved dependencies just enough to explain what they identify.
 
 Use the current code constructing `PROVENANCE_EXTERNAL_PARAMS` as the field map.
-The [build-type document](../slsa/v1.0/L1/buildtype.md) contains historical example
+The [build-type document](https://github.com/tiiuae/ghaf-infra/blob/main/slsa/v1.0/L1/buildtype.md) contains historical example
 repository names and URLs; use the selected run's values in the demonstration.
 
 Two distinctions to repeat:
@@ -267,13 +267,13 @@ Spend roughly ten minutes matching the image digest, test target, device tag,
 and test set between the parent and downstream jobs. Use another ten minutes
 for verification and ten for following results back to the parent.
 
-In [ghaf-hw-test](../modules/jenkins/pipelines/ghaf-hw-test.groovy), stop at
+In [ghaf-hw-test](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipelines/ghaf-hw-test.groovy), stop at
 `Verify provenance`, `Image download`, and the image signature check before
 `Flash`. Then follow the configured `Relay Boot test` and `Bat test` results back
 to the parent run. Explain job orchestration and results; leave Robot test
 implementation, relays, and hardware operation for Mariia.
 
-The [provenance trust policy](../slsa/provenance-trust-policy.yaml) requires the
+The [provenance trust policy](https://github.com/tiiuae/ghaf-infra/blob/main/slsa/provenance-trust-policy.yaml) requires the
 expected predicate/build type, target repository, permitted CI identity, and a
 build finished less than six hours ago, with signature verification enabled.
 
@@ -292,7 +292,7 @@ cause OCI test-result publication to be skipped. Read the collection/publish log
 and saved results before concluding that missing referrers mean no tests ran.
 
 Keep release policy and archival outside the main walkthrough. If asked, point to
-the [release-policy documentation](architecture.md#release-artifact-storage) as a
+the [release-policy documentation](https://github.com/tiiuae/ghaf-infra/blob/main/docs/architecture.md#release-artifact-storage) as a
 separate consumer of evidence.
 
 ### 13:00–13:10 — Break
@@ -371,7 +371,7 @@ Confirm the expected commit independently from the selected run before verifying
 The manifest is a convenient source for the command argument, not an independent
 trust anchor. Public-key verification of image/provenance signatures also needs
 the certificate configuration expected by
-[`verify-signature`](../scripts/verify-signature.sh); rehearse in that environment
+[`verify-signature`](https://github.com/tiiuae/ghaf-infra/blob/main/scripts/verify-signature.sh); rehearse in that environment
 or use the saved verification logs.
 
 ## If time or connectivity runs short

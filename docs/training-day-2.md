@@ -40,7 +40,7 @@ evidence, explain verification decisions, and investigate a failed test handoff.
 | 10:40–11:00 | Exercise: reconstruct the run using Jenkins and the relevant source files, followed by a group review. | Independently navigate a run and locate supporting evidence. |
 
 The main target is `packages.x86_64-linux.intel-laptop-debug`. Its
-[ghaf-main declaration](../modules/jenkins/pipelines/ghaf-main.groovy) configures
+[ghaf-main declaration](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipelines/ghaf-main.groovy) configures
 `_relayboot_bat_` tests for the `debug` variants on both Lenovo X1 and Darter Pro.
 The selected run provides the actual downstream job links and results.
 
@@ -55,7 +55,7 @@ The walkthrough follows three parts of the pipeline:
 3. **The test handoff:** the published image reference, device and test selection,
    downstream job links, and collected results.
 
-The [shared execution code](../modules/jenkins/pipeline-library/vars/pipelineExecution.groovy)
+The [shared execution code](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipeline-library/vars/pipelineExecution.groovy)
 shows the concrete build path: Jenkins selects a remote store for the target's
 architecture, runs `nix build` there, copies the result back, and roots it as
 `unsigned-output`.
@@ -63,10 +63,10 @@ architecture, runs `nix build` there, copies the result back, and roots it as
 A Nix builder and a Jenkins hardware-test agent have different roles. The builder
 produces store outputs; the test agent retrieves a published image and operates
 physical devices. The
-[architecture document](architecture.md#cicd-pipeline-flow) provides the supporting
+[architecture document](https://github.com/tiiuae/ghaf-infra/blob/main/docs/architecture.md#cicd-pipeline-flow) provides the supporting
 flow.
 
-The [test handoff](../modules/jenkins/pipeline-library/vars/hwTestUtils.groovy)
+The [test handoff](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipeline-library/vars/hwTestUtils.groovy)
 passes the published OCI digest reference to `ghaf-hw-test`, together with the
 concrete test target, device tag, and test set. One generic laptop image is tested
 using the device-specific variants declared in the job.
@@ -86,7 +86,7 @@ For each device, trace the parent job to its downstream `ghaf-hw-test` run and
 match `OCI_IMAGE_REF` to the published image digest. Distinguish a successful
 build, successful artifact verification, and successful hardware tests.
 
-The [pre-merge job](../modules/jenkins/pipelines/ghaf-pre-merge.groovy) uses the
+The [pre-merge job](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipelines/ghaf-pre-merge.groovy) uses the
 same shared execution with `_relayboot_pre-merge_` tests. It builds GitHub's PR
 merge commit and reports status to the PR head commit. This is a brief comparison
 with the main-branch run used for the exercises.
@@ -170,13 +170,13 @@ Those are separate verification decisions.
 The walkthrough uses one decoded Source VSA and its verification result to
 identify the commit, verifier, policy, and asserted source level. The repository's
 `source-vsa inspect` and `verify` commands support further exploration. The
-[implementation](../pkgs/source-vsa/src/source_vsa.py) verifies those claims as
+[implementation](https://github.com/tiiuae/ghaf-infra/blob/main/pkgs/source-vsa/src/source_vsa.py) verifies those claims as
 well as the Sigstore identity.
 
 In `ghaf-main`, Source VSA retrieval and verification are requested but optional.
 If unavailable or invalid, the stage is marked unstable and the build continues.
 That behavior is explicit in
-[pipeline execution](../modules/jenkins/pipeline-library/vars/pipelineExecution.groovy).
+[pipeline execution](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipeline-library/vars/pipelineExecution.groovy).
 If the selected run has no bundle, a separately identified verified example can
 illustrate the format; it does not establish a source claim for that run.
 
@@ -197,9 +197,9 @@ downstream verification steps.
 
 ### Verification and hardware-test results
 
-The [hardware-test job](../modules/jenkins/pipelines/ghaf-hw-test.groovy) retrieves
+The [hardware-test job](https://github.com/tiiuae/ghaf-infra/blob/main/modules/jenkins/pipelines/ghaf-hw-test.groovy) retrieves
 provenance and its signature, applies the
-[provenance trust policy](../slsa/provenance-trust-policy.yaml), downloads the
+[provenance trust policy](https://github.com/tiiuae/ghaf-infra/blob/main/slsa/provenance-trust-policy.yaml), downloads the
 image, and verifies its detached signature before flashing. The policy checks
 the expected provenance type, build type, source repository, permitted CI
 identity, and a build finished less than six hours ago.
